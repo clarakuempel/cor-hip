@@ -1,2 +1,5 @@
 data/UCF-101/
 data/UCF-101-exp/
+
+# confidential reaons
+train.sh
