@@ -1,0 +1,8 @@
+name: simple_connectome
+
+# n_hid: 64
+# nlayers: 3
+# dt: 1.0
+# epsilon: 1.0
+# gamma: 1.0
+# dropout: 0.1

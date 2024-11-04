@@ -1,0 +1,21 @@
+
+defaults:
+  - _self_ 
+  - model: simple_connectome
+  - dataset: ufc101
+
+batch_size: 1
+batch_size_val: 1
+epochs: 20
+lr: 0.001
+seed: 13
+
+
+
+wandb:
+  project: "cor-hip"
+  config: 
+    - model
+    - dataset
+  
+
