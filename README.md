@@ -48,8 +48,7 @@
 How to use the project on the cluster. Load the following modules:
 
 ```sh
-$ module load scipy-stack/2024b python/3.11.5
-
+$ module load scipy-stack/2024b python/3.11.5 opencv/4.10.0
 ```
 Create and activate a new virtual env. And update pip
 ```sh
