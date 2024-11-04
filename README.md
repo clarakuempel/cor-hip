@@ -49,7 +49,6 @@ How to use the project on the cluster. Load the following modules:
 
 ```sh
 $ module load scipy-stack/2024b python/3.11.5
-$ pip install --no-index torch torchvision torchaudio
 
 ```
 Create and activate a new virtual env. And update pip
