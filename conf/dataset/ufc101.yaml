@@ -2,6 +2,13 @@
 
 name: ufc101
 
+raw_dir: "data/UCF-101"
+processed_dir: "data/processed"
+frame_rate: 1
+# img_size: [128, 128]
+  # Model configurations here
+
+
 
 # output_dim: 6
 

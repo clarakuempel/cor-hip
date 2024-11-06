@@ -4,6 +4,7 @@ defaults:
   - model: simple_connectome
   - dataset: ufc101
 
+
 batch_size: 1
 batch_size_val: 1
 epochs: 20

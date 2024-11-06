@@ -1,4 +1,5 @@
 name: simple_connectome
+checkpoint: True
 
 # n_hid: 64
 # nlayers: 3

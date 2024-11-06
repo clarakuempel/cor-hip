@@ -17,6 +17,9 @@
   <summary>Table of Contents</summary>
   <ol>
     <li>
+     <a href="#todos">ToDOs</a>
+    </li>
+    <li>
       <a href="#about-the-project">About The Project</a>
     </li>
     <li>
@@ -32,10 +35,18 @@
   </ol>
 </details>
 
-
+## TODOs
+1. Data
+  - prepare the video and audio data in the correct format
+  - check downsampling and video / audio extraction
+  - what format of the video / audio path does the model expect?
+2. Integrate Mashbayars model in pytorch lightning pipeline
+- training and logging loop
+3. test with data on the cluster
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
+
 
 
 
