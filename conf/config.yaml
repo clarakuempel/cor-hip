@@ -1,22 +1,22 @@
 
 defaults:
-  - _self_ 
-  - model: simple_connectome
+  - model: gru_audio
   - dataset: ufc101
 
 
-batch_size: 1
+batch_size: 32
 batch_size_val: 1
 epochs: 20
-lr: 0.001
-seed: 13
+max_epochs: 10
 
+seed: 13
 
 
 wandb:
   project: "cor-hip"
-  config: 
-    - model
-    - dataset
+  config:
+    batch_size: 32
+    epochs: 20
+    model_name: gru_audio
   
 
