@@ -1,14 +1,13 @@
-# @package _global_
-
 name: ufc101
-
 raw_dir: "data/UCF-101"
-processed_dir: "data/processed"
 frame_rate: 1
-# img_size: [128, 128]
-  # Model configurations here
 
 
+input_folder: "/Users/clarakumpel/Mila/cor-hip/data/UCF-101/ApplyLipstick"
+output_folder_audio: "/Users/clarakumpel/Mila/cor-hip/data/UCF-101/ApplyLipstick_audio"
+bit_rate: "64k"
+sample_rate: 16000
+channels: 1  
 
 # output_dim: 6
 

@@ -1,4 +1,3 @@
-
 import subprocess
 import os
 import yaml
@@ -16,8 +15,6 @@ bit_rate = cfg["dataset"]["bit_rate"]
 sample_rate = cfg["dataset"]["sample_rate"]
 channels = cfg["dataset"]["channels"]
 
-
-
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
@@ -25,12 +22,12 @@ if not os.path.exists(output_folder):
 for file_name in os.listdir(input_folder):
     if file_name.endswith(".avi"):
         input_path = os.path.join(input_folder, file_name)
-        
-        output_audio_path = os.path.join(output_folder, file_name.replace(".avi", ".wav"))
+       	output_audio_path = os.path.join(output_folder, file_name.replace(".avi", ".wav"))
 
         if os.path.exists(output_audio_path):
-            os.remove(output_audio_path)        
+            os.remove(output_audio_path)
         command = f"ffmpeg -i {input_path} -ab {bit_rate} -ac {channels} -ar {sample_rate} -vn {output_audio_path}"
         subprocess.call(command, shell=True)
+
 
 subprocess.call(command, shell=True)

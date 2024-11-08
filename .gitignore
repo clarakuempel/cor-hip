@@ -3,3 +3,8 @@ data/UCF-101-exp/
 
 # confidential reaons
 train.sh
+
+
+*.DS_Store
+outputs/
+*__pycache__/
