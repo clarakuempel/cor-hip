@@ -30,6 +30,6 @@ for file_name in os.listdir(input_folder):
         subprocess.call(command, shell=True)
 
 
-if 
+
 subprocess.call(command, shell=True)
 
