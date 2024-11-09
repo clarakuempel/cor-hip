@@ -36,13 +36,15 @@
 </details>
 
 ## TODOs
-1. Data
-  - prepare the video and audio data in the correct format
-  - check downsampling and video / audio extraction
-  - what format of the video / audio path does the model expect?
-2. Integrate Mashbayars model in pytorch lightning pipeline
-- training and logging loop
-3. test with data on the cluster
+1. Audio data testing
+  - test audio data training on clustr with all data
+  - clean and check code
+  - check model?
+  - look at some results from the trained model
+
+2. Then integrate a second input stream from videos
+2. Integrate Mashbayars model instead of simple GPU, modify input?
+
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
