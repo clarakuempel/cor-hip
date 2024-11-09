@@ -2,7 +2,8 @@ import torch
 from torch import nn
 import pytorch_lightning as pl
 import torch.nn.functional as F
-import wandb
+# import wandb
+# wandb.init(mode="offline")
 
 
 class AudioGRUModel(pl.LightningModule):
@@ -39,10 +40,21 @@ class AudioGRUModel(pl.LightningModule):
 
         # Log representations to WandB 
         if batch_idx % 10 == 0:  
-            self.logger.experiment.log({
-                "anchor_representation": wandb.Histogram(anchor_rep.detach().cpu().numpy()),
-                "positive_representation": wandb.Histogram(positive_rep.detach().cpu().numpy())
-            })
+            # self.logger.experiment.log({
+            #     "anchor_representation": wandb.Histogram(anchor_rep.detach().cpu().numpy()),
+            #     "positive_representation": wandb.Histogram(positive_rep.detach().cpu().numpy())
+            # })
+
+            anchor_mean = anchor_rep.detach().cpu().mean().item()
+            anchor_std = anchor_rep.detach().cpu().std().item()
+            positive_mean = positive_rep.detach().cpu().mean().item()
+            positive_std = positive_rep.detach().cpu().std().item()
+
+            # Log to CSV
+            self.log("anchor_representation_mean", anchor_mean)
+            self.log("anchor_representation_std", anchor_std)
+            self.log("positive_representation_mean", positive_mean)
+            self.log("positive_representation_std", positive_std)
 
         return loss
 

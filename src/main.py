@@ -6,7 +6,9 @@ import torch
 from torch import device, nn
 
 import pytorch_lightning as pl
-from pytorch_lightning.loggers import WandbLogger
+# from pytorch_lightning.loggers import WandbLogger
+from pytorch_lightning.loggers import CSVLogger
+
 from pytorch_lightning.trainer import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
 
@@ -20,6 +22,7 @@ from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import DataLoader, Dataset
 from models import AudioGRUModel
 from data import AudioDataset
+
 
 
 
@@ -37,13 +40,16 @@ def main(cfg: DictConfig):
     # data_dir = cfg.dataset.output_folder_audioI wan
     # train_dataset = AudioDataset(data_dir, target_length=64)
 
+    current_directory = os.getcwd()
+    print("Current working directory:", current_directory)
+
+
     root_dir =  cfg.dataset.output_folders_audio
     train_dataset = AudioDataset(root_dir, target_length=64)
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
     model = AudioGRUModel(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, learning_rate=learning_rate)
-
     checkpoint_callback = ModelCheckpoint(
         monitor="train_loss",
         dirpath="checkpoints",
@@ -52,12 +58,20 @@ def main(cfg: DictConfig):
         mode="min",
     )
 
-    wandb_logger = WandbLogger(
-        project=cfg.wandb.project,
-        config= {**cfg.model, **cfg.dataset, **cfg.wandb.config}
-    )
+    # wandb_logger = WandbLogger(
+    #     project=cfg.wandb.project,
+    #     config= {**cfg.model, **cfg.dataset, **cfg.wandb.config}
+    # )
+    csv_logger = CSVLogger("logs", name="cor-hip")
 
-    trainer = pl.Trainer(max_epochs=max_epochs, callbacks=[checkpoint_callback], logger=wandb_logger)
+
+    trainer = pl.Trainer(
+        max_epochs=max_epochs, 
+        callbacks=[checkpoint_callback], 
+        logger=csv_logger,
+        devices=1,
+        accelerator="gpu"
+        )
 
     
 
