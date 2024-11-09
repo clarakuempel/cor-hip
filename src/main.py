@@ -34,8 +34,12 @@ def main(cfg: DictConfig):
     batch_size = cfg.batch_size     
     max_epochs = cfg.max_epochs
 
-    data_dir = cfg.dataset.output_folder_audio
-    train_dataset = AudioDataset(data_dir, target_length=64)
+    # data_dir = cfg.dataset.output_folder_audioI wan
+    # train_dataset = AudioDataset(data_dir, target_length=64)
+
+    root_dir =  cfg.dataset.output_folders_audio
+    train_dataset = AudioDataset(root_dir, target_length=64)
+
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
     model = AudioGRUModel(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, learning_rate=learning_rate)

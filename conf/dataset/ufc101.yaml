@@ -5,6 +5,7 @@ frame_rate: 1
 
 input_folder: "/Users/clarakumpel/Mila/cor-hip/data/UCF-101/ApplyLipstick"
 output_folder_audio: "/Users/clarakumpel/Mila/cor-hip/data/UCF-101/ApplyLipstick_audio"
+output_folders_audio:  "/Users/clarakumpel/Mila/cor-hip/data/UCF-101-exp"
 bit_rate: "64k"
 sample_rate: 16000
 channels: 1  
