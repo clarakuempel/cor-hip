@@ -7,12 +7,14 @@ import torch.nn.functional as F
 
 
 class AudioGRUModel(pl.LightningModule):
+    """
+    AudioGRUModel is a PyTorch Lightning Module that defines a GRU model for audio data."""
     def __init__(self, input_size=64, hidden_size=128, num_layers=2, projection_size=64, learning_rate=1e-3, temperature=0.5):
         super(AudioGRUModel, self).__init__()
         
-        self.gru = nn.GRU(input_size, hidden_size, num_layers, batch_first=True)
-        self.fc = nn.Linear(hidden_size, hidden_size) # for the last hidden state of the GRU
-        self.projection_head = nn.Sequential(
+        self.gru = nn.GRU(input_size, hidden_size, num_layers, batch_first=True)    # GRU layer
+        self.fc = nn.Linear(hidden_size, hidden_size)                               # for the last hidden state of the GRU
+        self.projection_head = nn.Sequential(                                       # projection head  (to lower-dimensional space)            
             nn.Linear(hidden_size, projection_size),
             nn.ReLU(),
             nn.Linear(projection_size, projection_size)
@@ -21,18 +23,18 @@ class AudioGRUModel(pl.LightningModule):
         self.temperature = temperature
 
     def forward(self, x):
-        output, _ = self.gru(x)
-        representation = self.fc(output[:, -1, :])
-        projection = self.projection_head(F.normalize(representation, dim=1))
-        return F.normalize(projection, dim=1)  
-        # return F.normalize(representation, dim=1)  
+        """Forward pass of the model."""
+        output, _ = self.gru(x)                                                 # pass through the GRU
+        representation = self.fc(output[:, -1, :])                              # get the last hidden state
+        projection = self.projection_head(F.normalize(representation, dim=1))   # normalize and project
+        return F.normalize(projection, dim=1)                                   # normalize the projection
 
     def training_step(self, batch, batch_idx):
+        """Training step for the model."""
         anchor, positive = batch  
         anchor_rep = self(anchor)
         positive_rep = self(positive)
 
-        # Contrastive loss
         loss = self.contrastive_loss(anchor_rep, positive_rep)
         self.log("train_loss", loss)
         
@@ -61,6 +63,7 @@ class AudioGRUModel(pl.LightningModule):
 
 
     def contrastive_loss(self, anchor_rep, positive_rep):
+        """Calculate contrastive loss."""
 
         batch_size = anchor_rep.size(0)
         representations = torch.cat([anchor_rep, positive_rep], dim=0)
@@ -78,5 +81,6 @@ class AudioGRUModel(pl.LightningModule):
 
 
     def configure_optimizers(self):
+        """Configure the optimizer for the model."""
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         return optimizer

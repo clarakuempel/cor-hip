@@ -25,6 +25,13 @@ from data import AudioDataset
 
 
 
+def is_data_processed(output_dir):
+    """Check if the data is already processed by verifying the existence of .npy files."""
+    return any(file.endswith(".npy") for file in os.listdir(output_dir))
+
+
+
+
 
 @hydra.main(config_path="../conf", config_name="config", version_base="1.1")
 def main(cfg: DictConfig):
@@ -37,18 +44,22 @@ def main(cfg: DictConfig):
     batch_size = cfg.batch_size     
     max_epochs = cfg.max_epochs
 
-    # data_dir = cfg.dataset.output_folder_audioI wan
-    # train_dataset = AudioDataset(data_dir, target_length=64)
 
-    current_directory = os.getcwd()
-    print("Current working directory:", current_directory)
+    root_dir = cfg.dataset.input_folders_small if cfg.data_subset else cfg.dataset.input_folders
 
 
-    root_dir =  cfg.dataset.output_folders_audio
-    train_dataset = AudioDataset(root_dir, target_length=64)
+    device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
+    print("Device:", device)
+    print(f"Number of devices: {trainer.num_devices}")
+    pl.seed_everything(cfg.seed)
+    # torch.backends.cudnn.determinstic = True
+    # torch.backends.cudnn.benchmark = False
+
+    train_dataset = AudioDataset(cfg.dataset, root_dir)
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
+    # TODO: set up connectome model here
     model = AudioGRUModel(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, learning_rate=learning_rate)
     checkpoint_callback = ModelCheckpoint(
         monitor="train_loss",
@@ -73,51 +84,8 @@ def main(cfg: DictConfig):
         accelerator="gpu"
         )
 
-    
-
-
-
     trainer.fit(model, train_loader)
 
-
-    # device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
-    # print("Device:", device)
-    # print(f"Number of devices: {trainer.num_devices}")
-    # pl.seed_everything(cfg.seed)
-    # torch.backends.cudnn.determinstic = True
-    # torch.backends.cudnn.benchmark = False
-
-    
-
-
-    # model = Connectome(**cfg.model)
-    #     datasets = {
-    #         "train": ,
-    #         "val": 
-    #     }
-
-
-
-
-    ## if checkpoint, load from checkpoint, otherwise train
-
-
-    ## TODO: load args / cfg
-
-
-    # TODO: set seed for reproducibilty
-
-    ## load data / DataLoader Python
-    # train, test, ....
-
-    ## build connectome graph
-    ## build NN from graph
-
-    ## set up training loop: Readout, optimizer, criterion, losses, 
-    ## load model evtl
-    ## for epoch: .... (save losses)
-
-    # 
 
 
 
