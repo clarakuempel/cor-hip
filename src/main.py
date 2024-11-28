@@ -23,6 +23,8 @@ from torch.utils.data import DataLoader, Dataset
 from models import AudioGRUModel
 from data import AudioDataset
 
+from models.graph import Graph, Architecture
+
 
 
 def is_data_processed(output_dir):
@@ -49,6 +51,7 @@ def main(cfg: DictConfig):
 
 
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
+
     print("Device:", device)
     print(f"Number of devices: {trainer.num_devices}")
     pl.seed_everything(cfg.seed)
@@ -59,15 +62,46 @@ def main(cfg: DictConfig):
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
-    # TODO: set up connectome model here
-    model = AudioGRUModel(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, learning_rate=learning_rate)
-    checkpoint_callback = ModelCheckpoint(
-        monitor="train_loss",
-        dirpath="checkpoints",
-        filename="audio_gru-{epoch:02d}-{train_loss:.2f}",
-        save_top_k=3,
-        mode="min",
-    )
+    if cfg.model == "gru_audio":
+
+
+        model = AudioGRUModel(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, learning_rate=learning_rate)
+        checkpoint_callback = ModelCheckpoint(
+            monitor="train_loss",
+            dirpath="checkpoints",
+            filename="audio_gru-{epoch:02d}-{train_loss:.2f}",
+            save_top_k=3,
+            mode="min",
+        )
+    elif cfg.model == "connectome":
+
+
+        graph_loc = '../utils/sample_graph_ucf_test.csv'  
+        input_nodes = [0]
+        output_nodes = [2]
+        graph = Graph(graph_loc, input_nodes=input_nodes, output_nodes=output_nodes)
+        input_sizes = graph.find_input_sizes()
+        input_dims = graph.find_input_dims()
+
+        model = Architecture(
+            graph=graph,
+            input_sizes=input_sizes,
+            input_dims=input_dims,
+            topdown=True
+        ).to(device)
+
+        checkpoint_callback = ModelCheckpoint(
+            monitor="train_loss",
+            dirpath="checkpoints",
+            filename="connectome_model-{epoch:02d}-{train_loss:.2f}",
+            save_top_k=3,
+            mode="min",
+        )
+    else:
+        raise ValueError(f"Unknown model type: {cfg.model}")
+
+
+
 
     # wandb_logger = WandbLogger(
     #     project=cfg.wandb.project,
@@ -77,7 +111,7 @@ def main(cfg: DictConfig):
 
 
     trainer = pl.Trainer(
-        max_epochs=max_epochs, 
+        max_epochs=cfg.max_epochs, 
         callbacks=[checkpoint_callback], 
         logger=csv_logger,
         devices=1,
@@ -85,9 +119,6 @@ def main(cfg: DictConfig):
         )
 
     trainer.fit(model, train_loader)
-
-
-
 
 
 # %%
