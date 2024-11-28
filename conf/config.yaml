@@ -1,7 +1,8 @@
 
 defaults:
+  - _self_
   - model: gru_audio
-  - dataset: ufc101
+  - dataset: ucf101
 
 
 batch_size: 32
@@ -11,6 +12,7 @@ max_epochs: 10
 
 seed: 13
 
+data_subset: True
 
 wandb:
   project: "cor-hip"
@@ -20,3 +22,8 @@ wandb:
     model_name: gru_audio
   
 
+hydra:
+  run:
+    dir: .
+  job:
+    chdir: False

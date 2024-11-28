@@ -1,10 +1,16 @@
 data/UCF-101/
 data/UCF-101-exp/
+data/UCF-101-exp2/
+data/UCF-101-audio/
+
+outputs
 
 # confidential reaons
 train.sh
 
 
 *.DS_Store
-outputs/
 *__pycache__/
+
+*.log
+*.hydra/

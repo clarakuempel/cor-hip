@@ -11,7 +11,7 @@ print(cfg)
 
 input_folder = cfg["dataset"]["input_folder"]
 output_folder = cfg["dataset"]["output_folder_audio"]
-bit_rate = cfg["dataset"]["bit_rate"]
+bit_rate = cfg["dataset"]["n_mels"]
 sample_rate = cfg["dataset"]["sample_rate"]
 channels = cfg["dataset"]["channels"]
 
