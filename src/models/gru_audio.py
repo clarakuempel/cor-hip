@@ -10,6 +10,7 @@ class AudioGRUModel(pl.LightningModule):
     """
     AudioGRUModel is a PyTorch Lightning Module that defines a GRU model for audio data."""
     def __init__(self, input_size=64, hidden_size=128, num_layers=2, projection_size=64, learning_rate=1e-3, temperature=0.5):
+        # TOOD: put temp
         super(AudioGRUModel, self).__init__()
         
         self.gru = nn.GRU(input_size, hidden_size, num_layers, batch_first=True)    # GRU layer

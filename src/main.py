@@ -15,12 +15,16 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 
 
 
+
 import hydra
+# from hydra.utils import get_logger
+
 from omegaconf import DictConfig, OmegaConf
 
 
 from torch.utils.data import DataLoader, Dataset
 from models import AudioGRUModel
+from models.connectome import Connectome
 from data import AudioDataset
 
 from models.graph import Graph, Architecture
@@ -38,6 +42,8 @@ def is_data_processed(output_dir):
 @hydra.main(config_path="../conf", config_name="config", version_base="1.1")
 def main(cfg: DictConfig):
     print(OmegaConf.to_yaml(cfg))
+    # logger = logging.getLogger(__name__)
+
 
     input_size = cfg.model.input_size    
     hidden_size = cfg.model.hidden_size    
@@ -48,24 +54,27 @@ def main(cfg: DictConfig):
 
 
     root_dir = cfg.dataset.input_folders_small if cfg.data_subset else cfg.dataset.input_folders
-
-
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
 
     print("Device:", device)
-    print(f"Number of devices: {trainer.num_devices}")
     pl.seed_everything(cfg.seed)
     # torch.backends.cudnn.determinstic = True
     # torch.backends.cudnn.benchmark = False
 
     train_dataset = AudioDataset(cfg.dataset, root_dir)
-
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-
-    if cfg.model == "gru_audio":
-
-
-        model = AudioGRUModel(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, learning_rate=learning_rate)
+   
+    if cfg.model.name == "gru_audio":
+        # logger.info("Selected model: GRU Audio")
+        model = AudioGRUModel(
+            input_size=input_size, 
+            hidden_size=hidden_size, 
+            num_layers=num_layers, 
+            projection_size = cfg.model.projection_size,
+            learning_rate=learning_rate,
+            temperature=cfg.model.temperature
+        )
+        
         checkpoint_callback = ModelCheckpoint(
             monitor="train_loss",
             dirpath="checkpoints",
@@ -73,10 +82,12 @@ def main(cfg: DictConfig):
             save_top_k=3,
             mode="min",
         )
-    elif cfg.model == "connectome":
+    elif cfg.model.name == "connectome":
+        # breakpoint()
 
+        # logger.info("Selected model: Connectome-based Architecture")
 
-        graph_loc = '../utils/sample_graph_ucf_test.csv'  
+        graph_loc = '/home/ckuempel/cor-hip/utils/sample_graph_ucf_test.csv'  
         input_nodes = [0]
         output_nodes = [2]
         graph = Graph(graph_loc, input_nodes=input_nodes, output_nodes=output_nodes)
@@ -89,6 +100,10 @@ def main(cfg: DictConfig):
             input_dims=input_dims,
             topdown=True
         ).to(device)
+        model = Connectome(cfg.model, model, temperature=cfg.model.temperature)
+
+        ## TODO: wrap model into pytorch lightning model
+
 
         checkpoint_callback = ModelCheckpoint(
             monitor="train_loss",
@@ -98,6 +113,7 @@ def main(cfg: DictConfig):
             mode="min",
         )
     else:
+        # logger.error("Unknown model type: %s", cfg.model.name)
         raise ValueError(f"Unknown model type: {cfg.model}")
 
 
@@ -109,14 +125,13 @@ def main(cfg: DictConfig):
     # )
     csv_logger = CSVLogger("logs", name="cor-hip")
 
-
     trainer = pl.Trainer(
-        max_epochs=cfg.max_epochs, 
+        max_epochs=max_epochs, 
         callbacks=[checkpoint_callback], 
         logger=csv_logger,
         devices=1,
         accelerator="gpu"
-        )
+    )
 
     trainer.fit(model, train_loader)
 

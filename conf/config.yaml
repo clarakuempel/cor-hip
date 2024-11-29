@@ -1,7 +1,8 @@
 
 defaults:
   - _self_
-  - model: gru_audio
+  # - model: gru_audio
+  - model: connectome
   - dataset: ucf101
 
 
@@ -22,8 +23,13 @@ wandb:
     model_name: gru_audio
   
 
+
 hydra:
   run:
-    dir: .
+    dir: ./outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
   job:
     chdir: False
+
+  # output_subdir: ./logs  # Subdirectory for outputs
+  # job_logging:
+  #   level: INFO  # Set desired log level (DEBUG, INFO, WARNING, etc.)

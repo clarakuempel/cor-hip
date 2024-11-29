@@ -28,8 +28,8 @@ class AudioDataset(Dataset):
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
 
-        # if not self.is_data_processed():
-        self.preprocess_data(root_dir)
+        if not self.is_data_processed():
+            self.preprocess_data(root_dir)
 
         self.load_audio_files()
 
@@ -58,6 +58,8 @@ class AudioDataset(Dataset):
                                 n_mels=self.n_mels,              # number of mel freq bins (number of freq. bands)
                                 hop_length=self.hop_length       # time resolution of the spectrogram
                             )
+
+                            # TODO: check MelSpectrogram with images
                             mel_spectrogram = transform(waveform)
                             mel_spectrogram = self.pad_or_truncate(mel_spectrogram)
                             np.save(os.path.join(self.output_dir, f"{os.path.splitext(file)[0]}.npy"), mel_spectrogram.numpy())
@@ -83,12 +85,16 @@ class AudioDataset(Dataset):
                 "-y"
             ]
             subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+            # TODO: check with librosa if wav is extracted correctly
+            # use wav files for mel spectrogram extraction
+            # mel2audio is converting it back
 
             return torchaudio.load(tmp_wav.name)
 
 
     def pad_or_truncate(self, mel_spectrogram):
         # print(mel_spectrogram.size(2))
+        # TODO: check if that works correctly as well
         if mel_spectrogram.size(2) < self.target_length:
             pad_length = self.target_length - mel_spectrogram.size(2)
             mel_spectrogram = torch.nn.functional.pad(mel_spectrogram, (0, pad_length))

@@ -359,6 +359,7 @@ class Architecture(nn.Module):
                             bottomup.append(projs[input_num][0](inp[0][:, t, :, :, :]))
                             bottomup.append(projs[input_num][1](inp[1][:, t, :, :, :]))
                         else:
+                            breakpoint()
                             bottomup.append(projs[input_num](inp[:, t, :, :, :]))
                         input_num += 1
                     elif node in self.graph.input_indices: #if input is finished, but bottomup processing is still going (network is ruminating)

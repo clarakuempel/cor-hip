@@ -10,7 +10,7 @@ input_folders:  "/home/ckuempel/cor-hip/data/UCF-101"
 bit_rate: "64k"
 channels: 1 
 
-sample_rate: 16000
+sample_rate: 16000 # not used for now
 n_mels: 64
 hop_length: 512
 
