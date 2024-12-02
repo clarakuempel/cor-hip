@@ -1,32 +1,21 @@
 
 import os
-
 import numpy as np
 import torch
-from torch import device, nn
+from torch import nn
 
 import pytorch_lightning as pl
-# from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.loggers import CSVLogger
-
-from pytorch_lightning.trainer import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
 
-
-
-
-
 import hydra
-# from hydra.utils import get_logger
-
+import wandb
 from omegaconf import DictConfig, OmegaConf
 
-
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 from models import AudioGRUModel
 from models.connectome import Connectome
 from data import AudioDataset
-
 from models.graph import Graph, Architecture
 
 
@@ -37,103 +26,84 @@ def is_data_processed(output_dir):
 
 
 
-
-
 @hydra.main(config_path="../conf", config_name="config", version_base="1.1")
 def main(cfg: DictConfig):
     print(OmegaConf.to_yaml(cfg))
-    # logger = logging.getLogger(__name__)
 
+    # Set up logging
+    wandb.init(
+        project=cfg.wandb.project,
+        mode="offline",
+        config=OmegaConf.to_container(cfg, resolve=True) 
+    )
 
-    input_size = cfg.model.input_size    
-    hidden_size = cfg.model.hidden_size    
-    num_layers = cfg.model.num_layers    
-    learning_rate = cfg.model.lr
-    batch_size = cfg.batch_size     
-    max_epochs = cfg.max_epochs
-
-
-    root_dir = cfg.dataset.input_folders_small if cfg.data_subset else cfg.dataset.input_folders
+    # Set up device and seed
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
-
     print("Device:", device)
     pl.seed_everything(cfg.seed)
-    # torch.backends.cudnn.determinstic = True
-    # torch.backends.cudnn.benchmark = False
 
+    # Set up logger
+    root_dir = cfg.dataset.input_folders_small if cfg.data_subset else cfg.dataset.input_folders
     train_dataset = AudioDataset(cfg.dataset, root_dir)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-   
+
+    # Set up model
     if cfg.model.name == "gru_audio":
-        # logger.info("Selected model: GRU Audio")
+        print("Selected model: GRU Audio")
         model = AudioGRUModel(
-            input_size=input_size, 
-            hidden_size=hidden_size, 
-            num_layers=num_layers, 
-            projection_size = cfg.model.projection_size,
-            learning_rate=learning_rate,
-            temperature=cfg.model.temperature
+            input_size=cfg.model.input_size,
+            hidden_size=cfg.model.hidden_size,
+            num_layers=cfg.model.num_layers,
+            projection_size=cfg.model.projection_size,
+            learning_rate=cfg.model.lr,
+            temperature=cfg.model.temperature,
         )
-        
-        checkpoint_callback = ModelCheckpoint(
-            monitor="train_loss",
-            dirpath="checkpoints",
-            filename="audio_gru-{epoch:02d}-{train_loss:.2f}",
-            save_top_k=3,
-            mode="min",
-        )
+        checkpoint_filename = "audio_gru-{epoch:02d}-{train_loss:.2f}"
+
+
     elif cfg.model.name == "connectome":
-        # breakpoint()
-
-        # logger.info("Selected model: Connectome-based Architecture")
-
-        graph_loc = '/home/ckuempel/cor-hip/utils/sample_graph_ucf_test.csv'  
-        input_nodes = [0]
-        output_nodes = [2]
-        graph = Graph(graph_loc, input_nodes=input_nodes, output_nodes=output_nodes)
-        input_sizes = graph.find_input_sizes()
-        input_dims = graph.find_input_dims()
-
-        model = Architecture(
+        print("Selected model: Connectome-based Architecture")
+        graph = Graph(
+            '/home/ckuempel/cor-hip/utils/sample_graph_ucf_test.csv' ,
+            input_nodes = [0],
+            output_nodes = [2]
+        )
+        graph_model = Architecture(
             graph=graph,
-            input_sizes=input_sizes,
-            input_dims=input_dims,
+            input_sizes=graph.find_input_sizes(),
+            input_dims=graph.find_input_dims(),
             topdown=True
         ).to(device)
-        model = Connectome(cfg.model, model, temperature=cfg.model.temperature)
-
-        ## TODO: wrap model into pytorch lightning model
-
-
-        checkpoint_callback = ModelCheckpoint(
-            monitor="train_loss",
-            dirpath="checkpoints",
-            filename="connectome_model-{epoch:02d}-{train_loss:.2f}",
-            save_top_k=3,
-            mode="min",
-        )
+        model = Connectome(cfg.model, graph_model, temperature=cfg.model.temperature)
+        checkpoint_filename = "connectome_model-{epoch:02d}-{train_loss:.2f}"
     else:
-        # logger.error("Unknown model type: %s", cfg.model.name)
-        raise ValueError(f"Unknown model type: {cfg.model}")
+        raise ValueError(f"Unknown model type: {cfg.model.name}")
+    
+    # Set up checkpoint callback
+    checkpoint_callback = ModelCheckpoint(
+        monitor="train_loss",
+        dirpath=os.path.join(os.getcwd(), "checkpoints"),
+        filename=checkpoint_filename,
+        save_top_k=3,
+        mode="min",
+    )
 
+    # Set up logger
+    csv_logger = CSVLogger(save_dir=os.path.join(os.getcwd(), "logs"), name="cor-hip")
 
-
-
-    # wandb_logger = WandbLogger(
-    #     project=cfg.wandb.project,
-    #     config= {**cfg.model, **cfg.dataset, **cfg.wandb.config}
-    # )
-    csv_logger = CSVLogger("logs", name="cor-hip")
-
+    # PyTorch Lightning Trainer
     trainer = pl.Trainer(
-        max_epochs=max_epochs, 
+        max_epochs= cfg.max_epochs, 
         callbacks=[checkpoint_callback], 
-        logger=csv_logger,
+        logger=[csv_logger],
         devices=1,
-        accelerator="gpu"
+        accelerator="gpu" if torch.cuda.is_available() else "cpu",
     )
 
     trainer.fit(model, train_loader)
+
+    wandb.save(os.path.join(os.getcwd(), "wandb/offline-*"))
+
 
 
 # %%
