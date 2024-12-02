@@ -17,5 +17,5 @@ train.sh
 
 # Local testings
 src/data/processing.py
-src/video_testing/*
+src/video_testing/import.py
 src/test_audio.py
