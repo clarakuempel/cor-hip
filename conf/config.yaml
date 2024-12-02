@@ -2,7 +2,7 @@
 defaults:
   - _self_
   # - model: gru_audio
-  - model: connectome
+  - model: gru_audio
   - dataset: ucf101
 
 

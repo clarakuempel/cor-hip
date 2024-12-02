@@ -33,19 +33,21 @@ def main(cfg: DictConfig):
     # Set up logging
     wandb.init(
         project=cfg.wandb.project,
-        mode="offline",
+        mode="disabled",
         config=OmegaConf.to_container(cfg, resolve=True) 
     )
 
     # Set up device and seed
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
+
+
     print("Device:", device)
     pl.seed_everything(cfg.seed)
 
     # Set up logger
     root_dir = cfg.dataset.input_folders_small if cfg.data_subset else cfg.dataset.input_folders
     train_dataset = AudioDataset(cfg.dataset, root_dir)
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=cfg.batch_size, shuffle=True)
 
     # Set up model
     if cfg.model.name == "gru_audio":

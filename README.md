@@ -87,6 +87,10 @@ $ pip install --no-index torch torchvision torchaudio
 <!-- USAGE EXAMPLES -->
 ## Usage
 
+Use cfg files to execute specific script.
+$ python main.py
+
+
 
 <!-- ROADMAP -->
 ## Roadmap
