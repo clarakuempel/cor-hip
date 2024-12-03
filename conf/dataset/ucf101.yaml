@@ -3,8 +3,9 @@ raw_dir: "data/UCF-101"
 frame_rate: 1
 
 
+output_folder: "/home/ckuempel/cor-hip/data/UCF-101-audio-video"
 output_folder_audio: "/home/ckuempel/cor-hip/data/UCF-101-audio"
-input_folders_small:  "/home/ckuempel/cor-hip/data/UCF-101-exp"
+input_folders_small:  "/home/ckuempel/cor-hip/data/UCF-101-exp/PlayingCello"
 input_folders:  "/home/ckuempel/cor-hip/data/UCF-101"
 
 bit_rate: "64k"
