@@ -16,10 +16,8 @@ class VideoAudioDataset(Dataset):
     def __init__(self, cfg, root_dir):
         self.root_dir = root_dir
         self.output_dir = cfg.output_folder
-        if not os.path.exists(self.output_dir):
-            os.makedirs(self.output_dir)
-        self.frame_rate = cfg.frame_rate  
-        self.sample_rate = cfg.sample_rate
+        self.frame_rate = cfg.frame_rate                # Target frames per second
+        self.sample_rate = cfg.sample_rate              # Target audio sample rate
         self.n_mels = cfg.n_mels
         self.hop_length = cfg.hop_length
         self.target_length = cfg.target_length
@@ -52,31 +50,69 @@ class VideoAudioDataset(Dataset):
         if not os.path.exists(video_output_dir):
             os.makedirs(video_output_dir)
 
+
+        if not self.has_audio_stream(video_path):
+            print(f"No audio stream found for {video_path}. Skipping.")
+            return []
+
+
+        # Extract audio
         waveform, sample_rate = self.extract_audio(video_path)
 
+        # Calculate hop_length for Mel spectrogram to align with video frame rate
+        frame_duration = 1 / self.frame_rate  # Time per video frame in seconds
+        hop_length = int(frame_duration * sample_rate)  # Corresponding audio samples per video frame
+        
         mel_transform = torchaudio.transforms.MelSpectrogram(
             sample_rate=sample_rate,
             n_mels=self.n_mels,
-            hop_length=self.hop_length,
+            hop_length=hop_length,
         )
         mel_spectrogram = mel_transform(waveform)
+
+        # Calculate total duration
+        total_duration = waveform.size(1) / sample_rate
+
+
         # TODO: check waveform and mel_spectrogram implementation visually
         
+        frames = self.extract_video_frames(video_path, total_duration)
+
+        # TODO: check frames?
+
+        aligned_data = []
+        for i, frame in enumerate(frames):
+            # Extract the corresponding spectrogram column
+            mel_segment = mel_spectrogram[:, :, i]
+            mel_segment = self.pad_or_truncate(mel_segment)
+
+            # Save frame and spectrogram
+            frame_path = os.path.join(video_output_dir, f"frame_{i}.jpg")
+            mel_path = os.path.join(video_output_dir, f"mel_{i}.npy")
+
+            frame.save(frame_path)
+            np.save(mel_path, mel_segment.numpy())
+
+            aligned_data.append((frame_path, mel_path))
+
+        breakpoint()
+        return aligned_data
+
+
+
        
 
     def extract_audio(self, video_path):
         """Extract audio from video."""
-        if self.has_audio_stream(video_path):
+        
             
-            temp_audio_path = os.path.join(self.output_dir, "temp_audio.wav")
-            command = f"ffmpeg -i {video_path} -f wav -ar {self.sample_rate} {temp_audio_path} -y"
-            os.system(command)
-            waveform, sample_rate = torchaudio.load(temp_audio_path)
-            os.remove(temp_audio_path)
-            return waveform, sample_rate
-        else:
-            return []
-
+        temp_audio_path = os.path.join(self.output_dir, "temp_audio.wav")
+        command = f"ffmpeg -i {video_path} -f wav -ar {self.sample_rate} {temp_audio_path} -y"
+        os.system(command)
+        waveform, sample_rate = torchaudio.load(temp_audio_path)
+        os.remove(temp_audio_path)
+        return waveform, sample_rate
+       
     def has_audio_stream(self, video_path):
         command = [
             "ffprobe", "-v", "error", "-select_streams", "a",
@@ -84,6 +120,37 @@ class VideoAudioDataset(Dataset):
         ]
         result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return result.stdout != b"" 
+
+
+    def extract_video_frames(self, video_path, total_duration):
+        """Extract frames from the video."""
+        cap = cv2.VideoCapture(video_path)
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        frames_per_second = int(fps / self.frame_rate)
+        frames = []
+
+        for i in range(int(total_duration * self.frame_rate)):
+            cap.set(cv2.CAP_PROP_POS_FRAMES, i * frames_per_second)
+            ret, frame = cap.read()
+            if not ret:
+                break
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frames.append(Image.fromarray(frame))
+
+        cap.release()
+        breakpoint()
+        return frames
+
+
+
+    def pad_or_truncate(self, mel_spectrogram):
+        """Pad or truncate the spectrogram to target length."""
+        if mel_spectrogram.size(1) < self.target_length:
+            pad_length = self.target_length - mel_spectrogram.size(1)
+            mel_spectrogram = torch.nn.functional.pad(mel_spectrogram, (0, pad_length))
+        else:
+            mel_spectrogram = mel_spectrogram[:, :self.target_length]
+        return mel_spectrogram
 
         
 

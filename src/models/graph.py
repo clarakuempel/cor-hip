@@ -1,4 +1,4 @@
-from connectome_to_model.model.topdown_gru import ConvGRUBasalTopDownCell, ILC_upsampler
+from models.topdown_gru import ConvGRUBasalTopDownCell, ILC_upsampler
 import torch
 from torch import nn
 import torch.nn.functional as F

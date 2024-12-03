@@ -6,11 +6,11 @@ defaults:
   - dataset: ucf101
 
 
-batch_size: 32
-batch_size_val: 1
+batch_size: 16
+num_workers: 4
+
 epochs: 20
 max_epochs: 10
-num_workers: 4
 
 seed: 13
 
