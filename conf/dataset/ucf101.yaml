@@ -1,5 +1,6 @@
 name: ucf101
 
+preprocessing: False
 
 channels: 1 
 bit_rate: "64k"

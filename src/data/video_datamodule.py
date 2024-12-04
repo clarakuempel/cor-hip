@@ -44,7 +44,7 @@ class PreprocessedVideoDataset(Dataset):
 
         return image
 
-class PreprocessedVideoDataModule(pl.LightningDataModule):
+class VideoDataModule(pl.LightningDataModule):
     def __init__(self, data_dir, cfg, img_size):
         """
         DataModule for loading preprocessed video frames.
@@ -109,7 +109,7 @@ if __name__ == "__main__":
         data_dir = cfg.dataset.output_folder
 
         # Initialize DataModule
-        video_data_module = PreprocessedVideoDataModule(
+        video_data_module = VideoDataModule(
             data_dir=data_dir,
             cfg=cfg,
             img_size=(320,240)  # Target image size

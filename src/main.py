@@ -14,7 +14,7 @@ from omegaconf import DictConfig, OmegaConf
 
 from torch.utils.data import DataLoader
 from models import AudioGRUModel
-from models import VideoAudioModule
+from models import VideoDataModule
 from models.connectome import Connectome
 from data import AudioDataset
 from models.graph import Graph, Architecture
@@ -30,7 +30,7 @@ def is_data_processed(output_dir):
 @hydra.main(config_path="../conf", config_name="config", version_base="1.1")
 def main(cfg: DictConfig):
     print(OmegaConf.to_yaml(cfg))
-
+    
     # Set up logging
     wandb.init(
         project=cfg.wandb.project,
@@ -50,7 +50,7 @@ def main(cfg: DictConfig):
     # train_loader = DataLoader(train_dataset, batch_size=cfg.batch_size, shuffle=True)
 
 
-    data_module = PreprocessedVideoDataModule(
+    data_module = VideoDataModule(
         data_dir=cfg.dataset.output_folder,
         batch_size=cfg.batch_size,
         num_workers=cfg.num_workers,
@@ -58,6 +58,7 @@ def main(cfg: DictConfig):
     )
     data_module.setup()
 
+    breakpoint()
     
     # Set up model
     if cfg.model.name == "gru_audio":

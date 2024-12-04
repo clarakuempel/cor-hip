@@ -1,1 +1,0 @@
-# set up a simple test NN with pytorch lightning to test the whole env
