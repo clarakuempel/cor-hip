@@ -10,12 +10,12 @@
 
 
 module load scipy-stack/2024b python/3.11.5 opencv/4.10.0
-pip install --no-index --upgrade pip
-pip install --no-index torch torchvision torchaudio
-
+cd $HOME
 source corhip/bin/activate
 cd $HOME/cor-hip
 
+pip install --no-index --upgrade pip
+pip install --no-index -r requirements.txt
 
 python main.py
 
