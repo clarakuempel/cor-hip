@@ -14,6 +14,7 @@ from omegaconf import DictConfig, OmegaConf
 
 from torch.utils.data import DataLoader
 from models import AudioGRUModel
+from models import VideoAudioModule
 from models.connectome import Connectome
 from data import AudioDataset
 from models.graph import Graph, Architecture
@@ -39,20 +40,25 @@ def main(cfg: DictConfig):
 
     # Set up device and seed
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
-
-
     print("Device:", device)
     pl.seed_everything(cfg.seed)
 
-    # Set up loggerx
-    root_dir = cfg.dataset.input_folders_small if cfg.data_subset else cfg.dataset.input_folders
-    train_dataset = AudioDataset(cfg.dataset, root_dir)
 
-    # TODO: import data here as Dataset without processing
-    train_dataset = VideoAudioDataset(cfg.dataset, root_dir)
+    # root_dir = cfg.dataset.input_folders_small if cfg.data_subset else cfg.dataset.input_folders
+    # train_dataset = AudioDataset(cfg.dataset, root_dir)
+    # train_dataset = VideoAudioModule(cfg.dataset, root_dir)
+    # train_loader = DataLoader(train_dataset, batch_size=cfg.batch_size, shuffle=True)
 
-    train_loader = DataLoader(train_dataset, batch_size=cfg.batch_size, shuffle=True)
 
+    data_module = PreprocessedVideoDataModule(
+        data_dir=cfg.dataset.output_folder,
+        batch_size=cfg.batch_size,
+        num_workers=cfg.num_workers,
+        img_size=(320, 240)
+    )
+    data_module.setup()
+
+    
     # Set up model
     if cfg.model.name == "gru_audio":
         print("Selected model: GRU Audio")
@@ -71,7 +77,7 @@ def main(cfg: DictConfig):
         print("Selected model: Connectome-based Architecture")
         graph = Graph(
             '/home/ckuempel/cor-hip/utils/sample_graph_ucf_test.csv' ,
-            input_nodes = [0,2],
+            input_nodes = [2],
             # input_nodes = [0],
             output_nodes = [2]
         )
@@ -106,8 +112,9 @@ def main(cfg: DictConfig):
         devices=1,
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
     )
-
-    trainer.fit(model, train_loader)
+    
+    # trainer.fit(model, train_loader)
+    trainer.fit(model, data_module)
 
     wandb.save(os.path.join(os.getcwd(), "wandb/offline-*"))
 
