@@ -47,6 +47,10 @@ def main(cfg: DictConfig):
     # Set up loggerx
     root_dir = cfg.dataset.input_folders_small if cfg.data_subset else cfg.dataset.input_folders
     train_dataset = AudioDataset(cfg.dataset, root_dir)
+
+    # TODO: import data here as Dataset without processing
+    train_dataset = VideoAudioDataset(cfg.dataset, root_dir)
+
     train_loader = DataLoader(train_dataset, batch_size=cfg.batch_size, shuffle=True)
 
     # Set up model
@@ -67,7 +71,8 @@ def main(cfg: DictConfig):
         print("Selected model: Connectome-based Architecture")
         graph = Graph(
             '/home/ckuempel/cor-hip/utils/sample_graph_ucf_test.csv' ,
-            input_nodes = [0],
+            input_nodes = [0,2],
+            # input_nodes = [0],
             output_nodes = [2]
         )
         graph_model = Architecture(

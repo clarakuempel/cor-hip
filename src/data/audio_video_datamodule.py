@@ -138,7 +138,6 @@ class VideoAudioDataset(Dataset):
             frames.append(Image.fromarray(frame))
 
         cap.release()
-        breakpoint()
         return frames
 
 
