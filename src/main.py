@@ -1,23 +1,25 @@
 
 import os
 import numpy as np
-import torch
-from torch import nn
-
-import pytorch_lightning as pl
-from pytorch_lightning.loggers import CSVLogger
-from pytorch_lightning.callbacks import ModelCheckpoint
 
 import hydra
 import wandb
 from omegaconf import DictConfig, OmegaConf
 
-from torch.utils.data import DataLoader
+import torch
+
+import pytorch_lightning as pl
+from pytorch_lightning.loggers import CSVLogger
+from pytorch_lightning.callbacks import ModelCheckpoint
+
+
 from models import AudioGRUModel
-from models import VideoDataModule
 from models.connectome import Connectome
-from data import AudioDataset
 from models.graph import Graph, Architecture
+
+from data import AudioDataset
+from data import VideoDataModule
+
 
 
 
