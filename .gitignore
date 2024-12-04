@@ -1,6 +1,7 @@
 data/
 
 outputs
+utils/debugging/
 
 # confidential reaons
 train.sh
