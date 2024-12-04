@@ -54,10 +54,13 @@ def main(cfg: DictConfig):
 
     data_module = VideoDataModule(
         data_dir=cfg.dataset.output_folder,
-        cfg = cfg,
+        batch_size=cfg.batch_size,
+        num_workers=cfg.num_workers,
         img_size=(320, 240)
     )
     data_module.setup()
+
+    breakpoint()
     
     # Set up model
     if cfg.model.name == "gru_audio":
