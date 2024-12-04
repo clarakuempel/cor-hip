@@ -18,7 +18,7 @@ from models.connectome import Connectome
 from models.graph import Graph, Architecture
 
 from data import AudioDataset
-from data import VideoDataModule
+from data.video_datamodule import VideoDataModule
 
 
 
