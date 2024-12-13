@@ -1,6 +1,6 @@
 name: ucf101
 
-preprocessing: False
+preprocessing: True
 
 channels: 1 
 bit_rate: "64k"
@@ -10,10 +10,14 @@ n_mels: 64            # Number of Mel filterbanks for spectrograms
 hop_length: 160       # Hop length for Mel spectrogram computation
 target_length: 128    # Target length (time steps) for spectrograms
 
-output_folder: "/home/ckuempel/cor-hip/data/UCF-101-audio-video"
-output_folder_audio: "/home/ckuempel/cor-hip/data/UCF-101-audio"
-input_folders_small:  "/home/ckuempel/cor-hip/data/UCF-101-exp"
-input_folders:  "/home/ckuempel/cor-hip/data/UCF-101"
+output_folder: "data/UCF-101-video"
+#  output_folder: "/home/ckuempel/cor-hip/data/UCF-101-audio-video"
+output_folder_audio: "data/UCF-101-audio"
+input_folders_small:  "data/UCF-101-exp"
+# input_folders:  "data/UCF-101"
+input_folders:  "/network/datasets/ucf101.var/ucf101_torchvision/UCF-101"
+
+
 
 # output_folder: "/Users/clarakumpel/Mila/data/UCF-101-audio-video"
 # output_folder_audio: "/Users/clarakumpel/Mila/data/UCF-101-audio"

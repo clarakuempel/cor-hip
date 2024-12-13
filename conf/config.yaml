@@ -14,7 +14,7 @@ max_epochs: 10
 
 seed: 13
 
-data_subset: True
+data_subset: False
 
 wandb:
   project: "cor-hip"
