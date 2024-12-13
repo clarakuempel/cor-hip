@@ -53,14 +53,12 @@ def main(cfg: DictConfig):
 
 
     data_module = VideoDataModule(
-        data_dir=cfg.dataset.output_folder,
-        batch_size=cfg.batch_size,
-        num_workers=cfg.num_workers,
-        img_size=(320, 240)
+        data_dir= os.path.abspath(os.path.join(os.path.dirname(__file__), '..', cfg.dataset.output_folder)),
+        batch_size= 8 ,
+        sequence_length = 5
     )
     data_module.setup()
 
-    breakpoint()
     
     # Set up model
     if cfg.model.name == "gru_audio":
@@ -79,9 +77,8 @@ def main(cfg: DictConfig):
     elif cfg.model.name == "connectome":
         print("Selected model: Connectome-based Architecture")
         graph = Graph(
-            '/home/ckuempel/cor-hip/utils/sample_graph_ucf_test.csv' ,
-            input_nodes = [2],
-            # input_nodes = [0],
+            os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'utils/sample_graph_ucf_test.csv')),
+            input_nodes = [0],
             output_nodes = [2]
         )
         graph_model = Architecture(
