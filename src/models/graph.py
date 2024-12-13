@@ -319,6 +319,11 @@ class Architecture(nn.Module):
         :return: list of outputs
             number of outputs equal to output indices 
         """
+
+        # transform tensor to list for correct data handling
+        if not isinstance(all_inputs, list):
+            all_inputs = [all_inputs]
+
         # find the time length of the longest input signal + enough extra time for the last input to go through all nodes
         seq_len = max([i[0].shape[1] if isinstance(i, list) else i.shape[1] for i in all_inputs])
 
@@ -359,7 +364,6 @@ class Architecture(nn.Module):
                             bottomup.append(projs[input_num][0](inp[0][:, t, :, :, :]))
                             bottomup.append(projs[input_num][1](inp[1][:, t, :, :, :]))
                         else:
-                            breakpoint()
                             bottomup.append(projs[input_num](inp[:, t, :, :, :]))
                         input_num += 1
                     elif node in self.graph.input_indices: #if input is finished, but bottomup processing is still going (network is ruminating)

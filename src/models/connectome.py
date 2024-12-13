@@ -15,39 +15,58 @@ class Connectome(pl.LightningModule):
         
     def forward(self, x):
 
+        return self.model(x, batch=True)
+    
+    def contrastive_loss(self, anchor, positive, temperature):
+        """
+        Compute contrastive loss using the InfoNCE loss function.
+        Args:
+            anchor: Tensor of embeddings (shape: [batch_size, embed_dim]).
+            positive: Tensor of embeddings for positive samples (shape: [batch_size, embed_dim]).
+            temperature: Scaling factor for logits.
+        Returns:
+            Scalar loss value.
+        """
         
-        return self.model(x, batch=False)
+        anchor = anchor[0]
+        positive = positive[0]
+
+        batch_size = anchor.shape[0]
+
+
+        anchor_flat = anchor.view(anchor.shape[0], -1)
+        positive_aligned_flat = positive.view(positive.shape[0], -1)
+
+        anchor_norm = F.normalize(anchor_flat, dim=1)
+        positive_aligned_norm = F.normalize(positive_aligned_flat, dim=1) 
+
+        cosine_similarity = torch.sum(anchor_norm * positive_aligned_norm, dim=1) 
+        labels = torch.arange(batch_size).float().to(anchor.device)
+       
+        loss = F.cross_entropy(cosine_similarity, labels)
+        return loss
 
 
     def training_step(self, batch, batch_idx):
-        
-        anchor, positive = batch#
 
-        while anchor.ndim < 5:
-            anchor = torch.unsqueeze(anchor, 1) 
-        while positive.ndim < 5:
-            positive = torch.unsqueeze(positive, 1) 
+        """
+        Perform a single training step.
+        Args:
+            batch: A tuple containing input frames and the target frame.
+            batch_idx: The index of the current batch.
+        Returns:
+            Loss value for the batch.
+        """
+        input_frames, target_frame = batch
 
-        anchor_rep = self(anchor)
-        positive_rep = self(positive)
+        # Compute embeddings for input sequence and target frame
+        input_embeddings = self(input_frames)  # Shape: [batch_size, embed_dim]
+        target_embeddings = self(target_frame.unsqueeze(1))  # Shape: [batch_size, embed_dim]
+        # Compute contrastive loss
+        loss = self.contrastive_loss(input_embeddings, target_embeddings, self.temperature)
 
-       
-
-        loss = self.contrastive_loss(anchor_rep[0], positive_rep[0])
-
-        return loss
-    
-    def contrastive_loss(self, anchor_rep, positive_rep):
-
-        batch_size = anchor_rep.size(0)
-        representations = torch.cat([anchor_rep, positive_rep], dim=0)
-        similarity_matrix = F.cosine_similarity(representations.unsqueeze(1), representations.unsqueeze(0), dim=2)
-
-        mask = torch.eye(2 * batch_size, dtype=torch.bool, device=self.device)
-        similarity_matrix = similarity_matrix[~mask].view(2 * batch_size, -1)
-
-        labels = torch.cat([torch.arange(batch_size) for _ in range(2)], dim=0).to(self.device)        
-        loss = F.cross_entropy(similarity_matrix / self.temperature, labels)
+        # Log the loss
+        self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         return loss
 
 
