@@ -4,3 +4,6 @@ wandb
 torch
 torchvision
 torchaudio
+matplotlib
+pytorch-lightning
+pandas
