@@ -1,8 +1,10 @@
 data/
 
 outputs
+logs/
+checkpoints/
 utils/debugging/
-
+scripts/
 # confidential reaons
 train.sh
 
